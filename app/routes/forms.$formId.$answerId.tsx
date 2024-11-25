@@ -4,7 +4,7 @@ import { QueryCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 
 import { FormQuestion } from "~/components/question";
 import { Question } from "~/types/questions";
-import { dynamodbDocClient } from "~/lib/dynamodb";
+import { getDynamoDBDocClient } from "~/lib/dynamodb";
 import { getHost } from "~/lib/host";
 import { localeAtom } from "~/atoms/locale";
 import { useAtom } from "jotai";
@@ -19,6 +19,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       ":SK": "form",
     },
   });
+  const dynamodbDocClient = await getDynamoDBDocClient();
   const { Items: FormItems } = await dynamodbDocClient.send(queryFormCommand);
   if (!FormItems) return null;
   const questions: Question[] = FormItems[0].exQuestions;
@@ -47,6 +48,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     UpdateExpression: `SET ${expressions.join(", ")}`,
     ExpressionAttributeValues: expressionValues,
   });
+  const dynamodbDocClient = await getDynamoDBDocClient();
   await dynamodbDocClient.send(updateCommand);
   return redirect(`${getHost()}/forms/result`);
 };

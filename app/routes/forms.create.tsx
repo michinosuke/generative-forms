@@ -15,9 +15,9 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { IoCopy } from "react-icons/io5";
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import { QRCodeSVG } from "qrcode.react";
-import { bedrockClient } from "~/lib/bedrock";
 import { createPrompt } from "../prompts/create";
-import { dynamodbDocClient } from "~/lib/dynamodb";
+import { getBedrockClient } from "~/lib/bedrock";
+import { getDynamoDBDocClient } from "~/lib/dynamodb";
 import { getHost } from "~/lib/host";
 import { localeAtom } from "~/atoms/locale";
 import { nanoid } from "nanoid";
@@ -46,6 +46,7 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
     modelId: "anthropic.claude-3-5-sonnet-20240620-v1:0",
   };
   const command = new InvokeModelCommand(input);
+  const bedrockClient = await getBedrockClient();
   const { body } = await bedrockClient.send(command);
   const result = new TextDecoder().decode(body);
   const json = JSON.parse(result);
@@ -59,6 +60,7 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
       questions: questions,
     },
   });
+  const dynamodbDocClient = await getDynamoDBDocClient();
   const putResult = await dynamodbDocClient.send(putCommand);
   console.log(putResult);
   return { formId };

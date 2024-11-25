@@ -9,8 +9,8 @@ import { QueryCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { FormQuestion } from "~/components/question";
 import { Question } from "~/types/questions";
-import { bedrockClient } from "~/lib/bedrock";
-import { dynamodbDocClient } from "~/lib/dynamodb";
+import { getBedrockClient } from "~/lib/bedrock";
+import { getDynamoDBDocClient } from "~/lib/dynamodb";
 import { getHost } from "~/lib/host";
 import { localeAtom } from "~/atoms/locale";
 import { nanoid } from "nanoid";
@@ -27,6 +27,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       ":SK": "form",
     },
   });
+  const dynamodbDocClient = await getDynamoDBDocClient();
   const { Items } = await dynamodbDocClient.send(queryCommand);
   if (!Items) return null;
   const questions: Question[] = Items[0].questions;
@@ -50,6 +51,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       ":SK": "form",
     },
   });
+  const dynamodbDocClient = await getDynamoDBDocClient();
   const { Items: FormItems } = await dynamodbDocClient.send(queryFormCommand);
   if (!FormItems) return null;
   const questions: Question[] = FormItems[0].questions;
@@ -100,6 +102,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     modelId: "anthropic.claude-3-5-sonnet-20240620-v1:0",
   };
   const command = new InvokeModelCommand(input);
+  const bedrockClient = await getBedrockClient();
   const { body } = await bedrockClient.send(command);
   const result = new TextDecoder().decode(body);
   const json = JSON.parse(result);
