@@ -1,12 +1,13 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import { fetchAuthSession } from "@aws-amplify/auth";
 
 export const getDynamoDBDocClient = async () => {
-  const { credentials } = await fetchAuthSession();
   const dynamodbClient = new DynamoDBClient({
     region: "ap-northeast-1",
-    credentials,
+    credentials: {
+      accessKeyId: process.env.ACCESS_KEY_ID!,
+      secretAccessKey: process.env.SECRET_ACCESS_KEY!,
+    },
   });
   const dynamodbDocClient = DynamoDBDocumentClient.from(dynamodbClient);
   return dynamodbDocClient;
